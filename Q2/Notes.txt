@@ -1,0 +1,52 @@
+### Training
+Split data in half by median (7 days) since start of symptoms. This yield 60 > 7-day and 63 <= 7-day images.
+
+For <= 7 (LE7):
+Augment 1 to 63 by adding cropped image from 2-day since it has less occurrences:
+"D:\GitHub\BMES725\Q2\Train\L7\Comparison-of-different-samples-for-2019-novel-cor_2020_International-Journa-p2-21%10.png"
+
+For > 7 (G7):
+Augment 4 to 60 by adding cropped image from 9-day, 12-day, 14-day, and 19-day:
+"D:\GitHub\BMES725\Q2\Train\G7\2020.03.13.20035212-p23-157.png"
+"D:\GitHub\BMES725\Q2\Train\G7\2020.02.10.20021584-p6-52%12.png"
+"D:\GitHub\BMES725\Q2\Train\G7\2020.03.10.20032136-p34-118_2%0.png"
+"D:\GitHub\BMES725\Q2\Train\G7\2020.03.16.20036145-p19-128-3.png"
+
+Yields 64 + 64 = 128 training images. Batch size = 16, steps per epoch: 128/16=8
+
+### Validation
+5 for LE7, 7 for G7
+
+For <= 7 (LE7):
+Augment 2 to 5 by adding cropped image from 2-day, 3-day:
+"D:\GitHub\BMES725\Q2\Valid\LE7\396A81A5-982C-44E9-A57E-9B1DC34E2C08.jpeg"
+
+Yields 7 + 7 = 14 training images. Batch size = 2, validation steps: 14/2=7
+
+### Train results
+
+# 128 training images
+train_batches = ImageDataGenerator().flow_from_directory(train_path, target_size=(224, 224), classes=labels, batch_size=16)
+
+# 14 validation images
+valid_batches = ImageDataGenerator().flow_from_directory(valid_path, target_size=(224, 224), classes=labels, batch_size=2)
+
+# Compile
+model.compile(Adam(lr=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
+
+# Train
+model.fit_generator(train_batches, steps_per_epoch=8, validation_data=valid_batches, validation_steps=7, epochs=5, verbose=2)
+
+Epoch 1/5
+ - 4s - loss: 571.1266 - accuracy: 0.5781 - val_loss: 494.9534 - val_accuracy: 0.5000
+Epoch 2/5
+ - 1s - loss: 350.6626 - accuracy: 0.5312 - val_loss: 255.7464 - val_accuracy: 0.4286
+Epoch 3/5
+ - 0s - loss: 105.5310 - accuracy: 0.6250 - val_loss: 248.1127 - val_accuracy: 0.5000
+Epoch 4/5
+ - 0s - loss: 45.1403 - accuracy: 0.7812 - val_loss: 163.5836 - val_accuracy: 0.5000
+Epoch 5/5
+ - 1s - loss: 23.7773 - accuracy: 0.8516 - val_loss: 0.0000e+00 - val_accuracy: 0.5000
+Success
+
+
