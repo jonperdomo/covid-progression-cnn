@@ -21,7 +21,7 @@ For <= 7 (LE7):
 Augment 2 to 5 by adding cropped image from 2-day, 3-day:
 "D:\GitHub\BMES725\Q2\Valid\LE7\396A81A5-982C-44E9-A57E-9B1DC34E2C08.jpeg"
 
-Yields 7 + 7 = 14 validation images. Batch size = 2, validation steps: 14/2=7
+Yields 7 + 7 = 14 training images. Batch size = 2, validation steps: 14/2=7
 
 ### Train results
 
@@ -49,10 +49,4 @@ Epoch 5/5
  - 1s - loss: 23.7773 - accuracy: 0.8516 - val_loss: 0.0000e+00 - val_accuracy: 0.5000
 Success
 
-## Add training dataset:
-Use Valid as Test
-Grab 16 files from Train to make a new Valid set (8 each), using images from across the range of days and from different groups
-Yields 128-16=112 training images. Batch size = 16, steps per epoch: 112/16=7
-Yields 16 validation images. Batch size = 8, validation steps: 16/8=2
-Yields 14 testing images. Batch size = 14, testing steps: 1
 
