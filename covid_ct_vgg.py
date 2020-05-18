@@ -72,7 +72,7 @@ def plot_confusion_matrix(cm, classes,
     plt.show()
 
 
-def train(number_of_epochs=5):
+def train(epochs=5):
     # Don't pre-allocate GPU memory (Tensorflow 2)
     gpus = tf.config.experimental.list_physical_devices('GPU')
     tf.config.experimental.set_memory_growth(gpus[0], True)
@@ -116,32 +116,38 @@ def train(number_of_epochs=5):
     model.compile(Adam(lr=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
 
     # Train
-    epochs = 100
     start = time.time()
-    model.fit_generator(train_batches, steps_per_epoch=14, validation_data=valid_batches, validation_steps=2, epochs=epochs, verbose=2)
+    history = model.fit_generator(train_batches,
+                                  steps_per_epoch=14,
+                                  validation_data=valid_batches,
+                                  validation_steps=2,
+                                  epochs=epochs, verbose=2)
     end = time.time()
     time_elapsed = end - start
     print("Time (s): %.3f" % time_elapsed)
 
-    # Save the model
+    # Save the model and history
     model_version = 0
-    filename = "Model_%d.h5" % 0
-    output_filepath = os.path.join(output_path, filename)
-    while os.path.exists(output_filepath):
+    model_filename = "Model_%d.h5" % model_version
+    model_filepath = os.path.join(output_path, model_filename)
+    while os.path.exists(model_filepath):
         model_version += 1
-        output_filepath = os.path.join(output_path, filename)
+        model_filename = "Model_%d.h5" % model_version
+        model_filepath = os.path.join(output_path, model_filename)
 
-    model.save(output_filepath)
-
-    print('Saved model %s' % output_filepath)
+    model.save(model_filepath)
+    history_filename = "Model_%d_history.npy" % model_version
+    history_filepath = os.path.join(output_path, history_filename)
+    np.save(history_filepath, history.history)
+    print('Saved model %s' % model_filepath)
 
 
 # Set number of epochs in the command line
 if __name__ == "__main__":
     if len(sys.argv) == 2:
-        epochs = sys.argv[1]
-        print(f"Number of epochs: {epochs}")
-        train(epochs)
+        number_of_epochs = int(sys.argv[1])
+        print(f"Number of epochs: {number_of_epochs}")
+        train(number_of_epochs)
     else:
         print("Missing number of epochs as input argument")
 
