@@ -54,5 +54,5 @@ Use Valid as Test
 Grab 16 files from Train to make a new Valid set (8 each), using images from across the range of days and from different groups
 Yields 128-16=112 training images. Batch size = 16, steps per epoch: 112/16=7
 Yields 16 validation images. Batch size = 8, validation steps: 16/8=2
-Yields 14 testing images. Batch size = 14, testing steps: 1
+Yields 14 testing images. Batch size = 14, testing steps: 14/7=2
 
