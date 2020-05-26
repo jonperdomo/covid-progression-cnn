@@ -52,7 +52,6 @@ def visualize_class_activation_map(model_path, img_paths, output_paths):
 
         # Create the class activation map.
         cam = np.zeros(dtype=np.float32, shape=conv_outputs.shape[0:2])
-        target_class = 1
         for i, w in enumerate(class_weights):
             conv_output_image = conv_outputs[:, :, i]
             cam += w * conv_output_image
