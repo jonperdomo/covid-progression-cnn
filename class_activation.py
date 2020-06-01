@@ -3,26 +3,39 @@ import numpy as np
 import keras
 from keras import backend as K
 from keras.models import Sequential
-from keras.layers.core import Dense
+from keras.layers.core import Dense, Lambda
 from keras.preprocessing.image import load_img
 from keras.preprocessing.image import img_to_array
 from keras.preprocessing.image import array_to_img
 from keras.applications.vgg16 import preprocess_input
+from keras.optimizers import SGD
 import cv2
 
 
 def visualize_class_activation_map(model_path, img_paths, output_paths):
     # Load model
     vgg16_model = keras.applications.vgg16.VGG16()
-    vgg16_model.layers.pop()
+
+    # Remove all after last convolutional layer
+    for i in range(5):
+        vgg16_model.layers.pop()
+
     model = Sequential()
     for layer in vgg16_model.layers:
         model.add(layer)
 
-    model.add(Dense(2, activation='softmax'))
+    # Load weights
+    model.load_weights(model_filepath, by_name=True)
+
+    # Add global average pooling layers
+    model.add(Lambda(global_average_pooling,
+              output_shape=global_average_pooling_shape))
+    model.add(Dense(2, activation='softmax', init='uniform'))
+    sgd = SGD(lr=0.01, decay=1e-6, momentum=0.5, nesterov=True)
+    model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+
     del vgg16_model  # Clear memory
 
-    model.load_weights(model_filepath)
     print(model.summary())
 
     # Access each image
@@ -79,13 +92,20 @@ def get_output_layer(model, layer_name):
     return layer
 
 
+def global_average_pooling(x):
+    return K.mean(x, axis=(2, 3))
+
+
+def global_average_pooling_shape(input_shape):
+    return input_shape[0:2]
+
+
 model_filepath = './Models/Model_1.h5'
 # image_folder = 'Q2/Test/G7/'
 # output_folder = 'Q2/Plot/G7_sum/'
 image_folder = 'Q2/Test/LE7/'
-output_folder = 'Q2/Plot/LE7_sum/'
+output_folder = 'Q2/Plot/LE7_sumV2/'
 image_files = [f for f in os.listdir(image_folder) if os.path.isfile(os.path.join(image_folder, f))]
 image_paths = [os.path.join(image_folder, f) for f in image_files]
 output_image_paths = [os.path.join(output_folder, f) for f in image_files]
-
 visualize_class_activation_map(model_filepath, image_paths, output_image_paths)
