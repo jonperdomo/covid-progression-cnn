@@ -1,4 +1,5 @@
 import os
+import csv
 import numpy as np
 import keras
 from keras import backend as K
@@ -12,7 +13,7 @@ from keras.optimizers import SGD
 import cv2
 
 
-def visualize_class_activation_map(model_path, img_paths, output_paths):
+def visualize_class_activation_map(model_path, img_paths, output_paths, output_csv):
     # Load model
     vgg16_model = keras.applications.vgg16.VGG16()
 
@@ -39,6 +40,8 @@ def visualize_class_activation_map(model_path, img_paths, output_paths):
     print(model.summary())
 
     # Access each image
+    labels = ['LE7', 'G7']
+    all_predictions = []
     for i in range(len(img_paths)):
         img_path = img_paths[i]
         output_path = output_paths[i]
@@ -59,9 +62,11 @@ def visualize_class_activation_map(model_path, img_paths, output_paths):
         # Get the 512 input weights to the softmax.
         class_weights = model.layers[16].get_weights()[1]
         final_conv_layer = get_output_layer(model, "block5_conv3")
-        get_output = K.function([model.layers[0].get_input_at(0)], [final_conv_layer.get_output_at(-1), model.layers[16].get_output_at(-1)])
+        get_output = K.function([model.layers[0].get_input_at(0)], [final_conv_layer.get_output_at(-1), model.layers[-1].get_output_at(-1)])
         [conv_outputs, predictions] = get_output([img])
         conv_outputs = conv_outputs[0, :, :, :]
+        prediction = labels[int(np.argmax(predictions, axis=1))]
+        all_predictions.append(prediction)
 
         # Create the class activation map.
         cam = np.zeros(dtype=np.float32, shape=conv_outputs.shape[0:2])
@@ -75,12 +80,25 @@ def visualize_class_activation_map(model_path, img_paths, output_paths):
         heatmap[np.where(cam < 0.2)] = 0
         img = heatmap * 0.5 + img
 
-        # Convert back to image
+        # Convert back to image and save
         img = np.squeeze(img)
         img_pil = array_to_img(img)
         img_pil.show()
         img_pil.save(output_path)
         print("Saved image %s" % output_path)
+
+    # Save predictions to CSV
+    if os.path.exists(output_csv):
+        os.remove(output_csv)
+
+    with open(output_csv, mode='w') as csv_file:
+        csv_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for j in range(len(img_paths)):
+            img_path = img_paths[j]
+            prediction = all_predictions[j]
+            csv_writer.writerow([img_path, prediction])
+
+    print("Saved CSV %s" % csv_file)
 
     print("Success")
 
@@ -102,10 +120,11 @@ def global_average_pooling_shape(input_shape):
 
 model_filepath = './Models/Model_1.h5'
 # image_folder = 'Q2/Test/G7/'
-# output_folder = 'Q2/Plot/G7_sum/'
+# output_folder = 'Q2/Plot/G7_sumV2/'
 image_folder = 'Q2/Test/LE7/'
 output_folder = 'Q2/Plot/LE7_sumV2/'
 image_files = [f for f in os.listdir(image_folder) if os.path.isfile(os.path.join(image_folder, f))]
 image_paths = [os.path.join(image_folder, f) for f in image_files]
+predictions_csv = os.path.join(output_folder, 'predictions.csv')
 output_image_paths = [os.path.join(output_folder, f) for f in image_files]
-visualize_class_activation_map(model_filepath, image_paths, output_image_paths)
+visualize_class_activation_map(model_filepath, image_paths, output_image_paths, predictions_csv)
