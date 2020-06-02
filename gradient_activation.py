@@ -1,4 +1,5 @@
 import os
+import csv
 import numpy as np
 import keras
 from keras import backend as K
@@ -115,7 +116,7 @@ def grad_cam(input_model, image, category_index, layer_name):
     return np.uint8(cam), heatmap
 
 
-def visualize_class_activation_map(model_path, img_paths, output_paths1, output_paths2):
+def visualize_class_activation_map(model_path, img_paths, output_paths1, output_paths2, output_csv):
     # Load model
     vgg16_model = keras.applications.vgg16.VGG16()
     vgg16_model.layers.pop()
@@ -127,9 +128,11 @@ def visualize_class_activation_map(model_path, img_paths, output_paths1, output_
     del vgg16_model  # Clear memory
 
     model.load_weights(model_filepath)
-    print(model.summary())
+    # print(model.summary())
 
     # Access each image
+    labels = ['LE7', 'G7']
+    all_predictions = []
     for i in range(len(img_paths)):
         img_path = img_paths[i]
         output_path1 = output_paths1[i]
@@ -150,7 +153,8 @@ def visualize_class_activation_map(model_path, img_paths, output_paths1, output_
 
         # Predict
         predictions = model.predict(img)
-        predicted_class = np.argmax(predictions)
+        predicted_class = labels[int(np.argmax(predictions, axis=1))]
+        all_predictions.append(predicted_class)
         cam, heatmap = grad_cam(model, img, predicted_class, "block5_conv3")
 
         # Convert back to image
@@ -172,6 +176,19 @@ def visualize_class_activation_map(model_path, img_paths, output_paths1, output_
         img_pil2.show()
         img_pil2.save(output_path2)
         print("Saved guided Grad-CAM:%s" % output_path2)
+
+    # Save predictions to CSV
+    if os.path.exists(output_csv):
+        os.remove(output_csv)
+
+    with open(output_csv, mode='w') as csv_file:
+        csv_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for j in range(len(img_paths)):
+            img_path = img_paths[j]
+            prediction = all_predictions[j]
+            csv_writer.writerow([img_path, prediction])
+
+    print("Saved CSV %s" % csv_file)
 
     print("Success")
 
@@ -195,7 +212,8 @@ output_folder2 = 'Q2/Plot/G7_gradient2/'
 
 image_files = [f for f in os.listdir(image_folder) if os.path.isfile(os.path.join(image_folder, f))]
 image_paths = [os.path.join(image_folder, f) for f in image_files]
+predictions_csv = os.path.join(output_folder1, 'predictions.csv')
 output_image_paths1 = [os.path.join(output_folder1, f) for f in image_files]
 output_image_paths2 = [os.path.join(output_folder2, f) for f in image_files]
 
-visualize_class_activation_map(model_filepath, image_paths, output_image_paths1, output_image_paths2)
+visualize_class_activation_map(model_filepath, image_paths, output_image_paths1, output_image_paths2, predictions_csv)
