@@ -118,11 +118,12 @@ def global_average_pooling_shape(input_shape):
     return input_shape[0:2]
 
 
-model_filepath = './Models/Model_1.h5'
-# image_folder = 'Q2/Test/G7/'
-# output_folder = 'Q2/Plot/G7_sumV2/'
-image_folder = 'Q2/Test/LE7/'
-output_folder = 'Q2/Plot/LE7_sumV2/'
+# model_filepath = './Models/Model_1.h5'
+model_filepath = './Models/Model_4.h5'
+image_folder = 'Q2/Test/G7/'
+output_folder = 'Q2/Plot/G7_CAM/'
+# image_folder = 'Q2/Test/LE7/'
+# output_folder = 'Q2/Plot/LE7_CAM/'
 image_files = [f for f in os.listdir(image_folder) if os.path.isfile(os.path.join(image_folder, f))]
 image_paths = [os.path.join(image_folder, f) for f in image_files]
 predictions_csv = os.path.join(output_folder, 'predictions.csv')

@@ -200,15 +200,15 @@ def get_output_layer(model, layer_name):
     return layer
 
 
-model_filepath = './Models/Model_1.h5'
+model_filepath = './Models/Model_4.h5'
 
-image_folder = 'Q2/Test/G7/'
-output_folder1 = 'Q2/Plot/G7_gradient1/'
-output_folder2 = 'Q2/Plot/G7_gradient2/'
+# image_folder = 'Q2/Test/G7/'
+# output_folder1 = 'Q2/Plot/G7_GCAM/'
+# output_folder2 = 'Q2/Plot/G7_GGCAM/'
 
-# image_folder = 'Q2/Test/LE7/'
-# output_folder1 = 'Q2/Plot/LE7_gradient1/'
-# output_folder2 = 'Q2/Plot/LE7_gradient2/'
+image_folder = 'Q2/Test/LE7/'
+output_folder1 = 'Q2/Plot/LE7_GCAM/'
+output_folder2 = 'Q2/Plot/LE7_GGCAM/'
 
 image_files = [f for f in os.listdir(image_folder) if os.path.isfile(os.path.join(image_folder, f))]
 image_paths = [os.path.join(image_folder, f) for f in image_files]
